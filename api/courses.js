@@ -6,8 +6,17 @@ const {
   getCourseById,
   updateCourseById,
   deleteCourseById,
+  addStudentToCourse,
+  removeStudentFromCourse,
+  getEnrolledStudentsInfoFromCourseById,
 } = require("../models/course");
 const { insertNewCourse } = require("../models/course");
+const { getDbReference } = require("../lib/mongo");
+
+const csv = require("csv-parser");
+const csvWriter = require("csv-writer");
+const { Transform } = require("stream");
+const { ObjectId } = require("mongodb");
 
 const router = Router();
 
@@ -91,7 +100,7 @@ router.delete("/:id", async (req, res, next) => {
   try {
     console.log(`  -- Remove a specific course: ${req.params.id}`);
     const deleteSuccessful = await deleteCourseById(req.params.id);
-    console.log("deleteSuc: ", deleteSuccessful);
+    // console.log("deleteSuc: ", deleteSuccessful);
     if (deleteSuccessful) {
       res.status(204).send();
     } else {
@@ -102,44 +111,113 @@ router.delete("/:id", async (req, res, next) => {
   }
 });
 
-router.post("/:id/students", (req, res, next) => {
-  try {
-    console.log(
-      `  -- Update enrollment for a specific course: ${req.params.id}`
-    );
-    res.status(200).send();
-  } catch (err) {
-    next(err);
+router.post("/:id/students", async (req, res, next) => {
+  if (req.body && (req.body.add || req.body.remove)) {
+    try {
+      console.log(
+        `  -- Update enrollment for a specific course: ${req.params.id}`
+      );
+      const course = await getCourseById(req.params.id);
+      // console.log(" -- req.body:\n ", req.body.add);
+
+      if (course) {
+        if (req.body.add) {
+          //   const db = getDbReference();
+          //   const collection = db.collection("users");
+          const addSuccessful = await addStudentToCourse(
+            req.params.id,
+            req.body.add
+          );
+        }
+        if (req.body.remove) {
+          const removeSuccessful = await removeStudentFromCourse(
+            req.params.id,
+            req.body.remove
+          );
+        }
+        res.status(200).send();
+      } else {
+        next();
+      }
+    } catch (err) {
+      next(err);
+    }
+  } else {
+    res.status(400).send({
+      error: "Request body is not valid",
+    });
   }
 });
 
-router.get("/:id/students", (req, res, next) => {
+router.get("/:id/students", async (req, res, next) => {
   try {
     console.log(
       `  -- Fetch a list of the students enrolled in a specific course: ${req.params.id}`
     );
-    res.status(200).send();
+    const course = await getCourseById(req.params.id);
+    if (course) {
+      const students = await getEnrolledStudentsInfoFromCourseById(
+        course.students
+      );
+      res.status(200).send({
+        students: students,
+      });
+    } else {
+      next();
+    }
   } catch (err) {
     next(err);
   }
 });
 
-router.get("/:id/roster", (req, res, next) => {
+router.get("/:id/roster", async (req, res, next) => {
   try {
     console.log(
       `  -- Fetch a csv file containing a list of student enrollment for a specific course: ${req.params.id}`
     );
+
+    // Retrieve the students' information from the database
+    const course = await getCourseById(req.params.id);
+    if (course) {
+      const students = await getEnrolledStudentsInfoFromCourseById(
+        course.students
+      );
+    } else {
+      next();
+    }
+
     res.status(200).send();
   } catch (err) {
     next(err);
   }
 });
 
-router.get("/:id/assignments", (req, res, next) => {
+router.get("/:id/assignments", async (req, res, next) => {
   try {
     console.log(
       `  -- Fetch a list of assignments for a specific course: ${req.params.id}`
     );
+
+    const db = getDbReference();
+    const collection = db.collection("assignments");
+
+    if (ObjectId.isValid(req.params.id)) {
+      const results = await collection
+        .find({
+          courseId: req.params.id,
+        })
+        .toArray();
+      if (results.length !== 0) {
+        res.status(200).send({
+          assignments: results,
+        });
+      } else {
+        next();
+      }
+    } else {
+      next();
+    }
+
     res.status(200).send();
   } catch (err) {
     next(err);

@@ -15,6 +15,8 @@ const CourseSchema = {
   title: { require: true },
   term: { require: true },
   instructorId: { require: true },
+  students: { require: false },
+  assignments: { require: false },
 };
 exports.CourseSchema = CourseSchema;
 
@@ -133,3 +135,40 @@ async function deleteCourseById(id) {
   return result.deletedCount > 0;
 }
 exports.deleteCourseById = deleteCourseById;
+
+async function addStudentToCourse(courseId, studentIds) {
+  const db = getDbReference();
+  const collection = db.collection("courses");
+  //   studentIds.forEach(async (studentId) => {
+  const result = await collection.updateOne(
+    { _id: new ObjectId(courseId) },
+    { $push: { students: { $each: studentIds } } }
+  );
+  //   });
+  return result.matchedCount > 0;
+}
+exports.addStudentToCourse = addStudentToCourse;
+
+async function removeStudentFromCourse(courseId, studentIds) {
+  const db = getDbReference();
+  const collection = db.collection("courses");
+  //   studentIds.forEach(async (studentId) => {
+  const result = await collection.updateOne(
+    { _id: new ObjectId(courseId) },
+    { $pull: { students: { $in: studentIds } } }
+  );
+  //   });
+  return result.matchedCount > 0;
+}
+exports.removeStudentFromCourse = removeStudentFromCourse;
+
+async function getEnrolledStudentsInfoFromCourseById(studentIds) {
+  const db = getDbReference();
+  const collection = db.collection("users");
+  const objectIds = studentIds.map((id) => new ObjectId(id));
+
+  const students = await collection.find({ _id: { $in: objectIds } }).toArray();
+  return students;
+}
+exports.getEnrolledStudentsInfoFromCourseById =
+  getEnrolledStudentsInfoFromCourseById;
