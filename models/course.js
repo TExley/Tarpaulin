@@ -100,17 +100,10 @@ async function updateCourseById(id, course) {
   //   console.log("  -- couse:\n ", course);
   const db = getDbReference();
   const collection = db.collection("courses");
-  const courseInfo = {
-    subject: course.subject,
-    number: course.number,
-    title: course.title,
-    term: course.term,
-    instructorId: course.instructorId,
-  };
 
-  const result = await collection.replaceOne(
+  const result = await collection.updateOne(
     { _id: new ObjectId(id) },
-    courseInfo
+    { $set: course }
   );
 
   //   console.log(" -- result:\n", result);
