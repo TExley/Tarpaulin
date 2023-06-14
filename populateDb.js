@@ -1,4 +1,5 @@
 require("dotenv").config();
+const bcrypt = require("bcryptjs");
 
 const {
   connectToDb,
@@ -12,14 +13,17 @@ const assignmentsToInsert = require("./data/assignments.json");
 connectToDb(async function () {
   const db = getDbReference();
   const collection = db.collection("users");
+  for (let i = 0; i < usersToInsert.length; i++) {
+    usersToInsert[i].password = await bcrypt.hash(usersToInsert[i].password, 8)
+  }
   const result = await collection.insertMany(usersToInsert);
   console.log(result);
   console.log("  -- Inserted Users");
 
   //insert courses to db
-  await db.collection("courses").insertMany(coursesToInsert);
+  // await db.collection("courses").insertMany(coursesToInsert);
   // insert assignment to db
-  await db.collection("assignments").insertMany(assignmentsToInsert);
+  // await db.collection("assignments").insertMany(assignmentsToInsert);
 
   closeDbConnection(function () {
     console.log("== DB connection closed");
