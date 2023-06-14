@@ -11,7 +11,6 @@ const UserSchema = {
 }
 
 async function createUser(user) {
-    user = extractValidFields(user, UserSchema);
     const db = getDbReference();
     const collection = db.collection("users");
 
@@ -19,6 +18,7 @@ async function createUser(user) {
     const result = await collection.insertOne(user);
     return result.insertedId;
 }
+
 
 async function getUserById(id) {
     const db = getDbReference();

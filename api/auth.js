@@ -3,7 +3,7 @@ const secretKey = "SuperSecret";
 
 async function verifyUser(req, res, next) {
   const token = req.headers["authorization"]?.split(" ")[1];
-  const userId = req.body.userId || req.body.ownerId || req.params.id;
+  const userId = req.body.userId;
   let decoded;
 
   if (!token) {
