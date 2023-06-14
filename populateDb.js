@@ -9,6 +9,7 @@ const {
 const usersToInsert = require("./data/users.json");
 const coursesToInsert = require("./data/courses.json");
 const assignmentsToInsert = require("./data/assignments.json");
+const bcrypt = require("bcryptjs");
 
 connectToDb(async function () {
   const db = getDbReference();
