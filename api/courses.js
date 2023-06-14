@@ -13,16 +13,23 @@ const {
 const { insertNewCourse } = require("../models/course");
 const { getDbReference } = require("../lib/mongo");
 
-const csv = require("csv-parser");
-const csvWriter = require("csv-writer");
+const fs = require("fs");
+const createCsvWriter = require("csv-writer").createObjectCsvWriter;
+const stringify = require("csv-stringify");
+
 const { Transform } = require("stream");
 const { ObjectId } = require("mongodb");
+const { verifyUser } = require("./auth");
 
 const router = Router();
 
-router.post("/", async (req, res, next) => {
+router.post("/", verifyUser, async (req, res, next) => {
   console.log(" -- req.body: ", req.body);
   if (validateAgainstSchema(req.body, CourseSchema)) {
+    if (req.user.role !== "admin") {
+      res.status(403).json({ error: "Unauthorized!" });
+      return;
+    }
     try {
       console.log("  -- Create a new course");
       const id = await insertNewCourse(req.body);
@@ -75,10 +82,19 @@ router.get("/:id", async (req, res, next) => {
   }
 });
 
-router.patch("/:id", async (req, res, next) => {
+router.patch("/:id", verifyUser, async (req, res, next) => {
   try {
     console.log(`  -- Update data about a specific course: ${req.params.id}`);
     if (validateAgainstSchema(req.body, CourseSchema)) {
+      const course = await getCourseById(req.params.id);
+      const instructorId = course.instructorId;
+      if (
+        req.user.role !== "admin" &&
+        !(req.user.role === "instructor" && req.user.userId === instructorId)
+      ) {
+        res.status(403).json({ error: "Unauthorized!" });
+        return;
+      }
       const updateSuccessful = await updateCourseById(req.params.id, req.body);
       //   console.log("  -- updateSuccessful: ", updateSuccessful);
       if (updateSuccessful) {
@@ -96,9 +112,13 @@ router.patch("/:id", async (req, res, next) => {
   }
 });
 
-router.delete("/:id", async (req, res, next) => {
+router.delete("/:id", verifyUser, async (req, res, next) => {
   try {
     console.log(`  -- Remove a specific course: ${req.params.id}`);
+    if (req.user.role !== "admin") {
+      res.status(403).json({ error: "Unauthorized!" });
+      return;
+    }
     const deleteSuccessful = await deleteCourseById(req.params.id);
     // console.log("deleteSuc: ", deleteSuccessful);
     if (deleteSuccessful) {
@@ -111,8 +131,18 @@ router.delete("/:id", async (req, res, next) => {
   }
 });
 
-router.post("/:id/students", async (req, res, next) => {
+router.post("/:id/students", verifyUser, async (req, res, next) => {
   if (req.body && (req.body.add || req.body.remove)) {
+    const course = await getCourseById(req.params.id);
+    const instructorId = course.instructorId;
+    console.log(" -- role:", req.user.role);
+    if (
+      req.user.role !== "admin" &&
+      !(req.user.role === "instructor" && req.user.userId === instructorId)
+    ) {
+      res.status(403).json({ error: "Unauthorized!" });
+      return;
+    }
     try {
       console.log(
         `  -- Update enrollment for a specific course: ${req.params.id}`
@@ -149,7 +179,16 @@ router.post("/:id/students", async (req, res, next) => {
   }
 });
 
-router.get("/:id/students", async (req, res, next) => {
+router.get("/:id/students", verifyUser, async (req, res, next) => {
+  const course = await getCourseById(req.params.id);
+  const instructorId = course.instructorId;
+  if (
+    req.user.role !== "admin" &&
+    !(req.user.role === "instructor") & (req.user.userId === instructorId)
+  ) {
+    res.status(403).json({ error: "Unauthorized!" });
+    return;
+  }
   try {
     console.log(
       `  -- Fetch a list of the students enrolled in a specific course: ${req.params.id}`
@@ -170,23 +209,43 @@ router.get("/:id/students", async (req, res, next) => {
   }
 });
 
-router.get("/:id/roster", async (req, res, next) => {
+router.get("/:id/roster", verifyUser, async (req, res, next) => {
+  const course = await getCourseById(req.params.id);
+  const instructorId = course.instructorId;
+
+  const db = getDbReference();
+  const collection = db.collection("users");
+  if (
+    req.user.role !== "admin" &&
+    !(req.user.role === "instructor") & (req.user.userId === instructorId)
+  ) {
+    res.status(403).json({ error: "Unauthorized!" });
+    return;
+  }
+
   try {
     console.log(
       `  -- Fetch a csv file containing a list of student enrollment for a specific course: ${req.params.id}`
     );
-
-    // Retrieve the students' information from the database
     const course = await getCourseById(req.params.id);
-    if (course) {
-      const students = await getEnrolledStudentsInfoFromCourseById(
-        course.students
-      );
-    } else {
-      next();
-    }
 
-    res.status(200).send();
+    const studentIds = course.students;
+    const objectIds = studentIds.map((id) => new ObjectId(id));
+    console.log(" -- studentIds:", studentIds);
+    const students = await collection
+      .find({ _id: { $in: objectIds } })
+      .toArray();
+    console.log(students);
+
+    const csvData = students
+      .map((student) => {
+        return `${student._id},"${student.name}",${student.email}`;
+      })
+      .join("\n");
+
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader("Content-Disposition", 'attachment; filename="roster.csv"');
+    res.status(200).send(csvData);
   } catch (err) {
     next(err);
   }
