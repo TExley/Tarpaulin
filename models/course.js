@@ -9,6 +9,7 @@ const { ObjectId } = require("mongodb");
 /*
  * Schema describing required/optional fields of a courses object.
  */
+
 const CourseSchema = {
   subject: { require: true },
   number: { require: true },
