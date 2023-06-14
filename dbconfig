@@ -1,3 +1,0 @@
-export MONGO_USER=final
-export MONGO_PASSWORD=hunter2
-export MONGO_DB_NAME=final

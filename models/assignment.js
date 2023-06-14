@@ -2,7 +2,6 @@ const { extractValidFields } = require("../lib/validation");
 const { getDbReference } = require("../lib/mongo");
 const { ObjectId } = require("mongodb");
 
-
 const AssignmentSchema = {
   title: { require: true },
   points: { require: true },
@@ -12,7 +11,6 @@ const AssignmentSchema = {
 };
 exports.AssignmentSchema = AssignmentSchema;
 
-
 async function insertNewAssignment(Assignment) {
     Assignment = extractValidFields(Assignment, AssignmentSchema);
   const db = getDbReference();
@@ -21,7 +19,6 @@ async function insertNewAssignment(Assignment) {
   return result.insertedId;
 }
 exports.insertNewAssignment = insertNewAssignment;
-
 
 async function getAssignmentsPage(page) {
   const db = getDbReference();
@@ -55,7 +52,6 @@ async function getAssignmentsPage(page) {
 }
 exports.getAssignmentsPage = getAssignmentsPage;
 
-
 async function getAssignmentById(id) {
   const db = getDbReference();
   const collection = db.collection("Assignments");
@@ -72,7 +68,6 @@ async function getAssignmentById(id) {
   }
 }
 exports.getAssignmentById = getAssignmentById;
-
 
 async function updateAssignmentById(id, Assignment) {
   const db = getDbReference();
@@ -145,3 +140,16 @@ async function getEnrolledStudentsInfoFromAssignmentById(studentIds) {
 }
 exports.getEnrolledStudentsInfoFromAssignmentById =
   getEnrolledStudentsInfoFromAssignmentById;
+
+async function updateAssignmentSubmissionsById(id, submissions) {
+    const db = getDbReference()
+    const collection = db.collection("assignments")
+
+    const result = await collection.updateOne(
+        { _id: new ObjectId(id) },
+        { $set: { submissions: submissions } }
+    )
+
+    return result.matchedCount > 0
+}
+exports.updateAssignmentSubmissionsById = updateAssignmentSubmissionsById

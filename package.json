@@ -22,12 +22,14 @@
   },
   "homepage": "https://github.com/osu-cs493-sp23/final-project-exleyt#readme",
   "dependencies": {
-    "amqplib": "^0.10.3",
     "csv-parser": "^3.0.0",
     "csv-writer": "^1.6.0",
     "dotenv": "^16.1.4",
     "express": "^4.18.2",
     "mongodb": "^5.6.0",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1",
+    "nodemon": "^2.0.22",
+    "redis": "^4.6.7"
   }
 }
