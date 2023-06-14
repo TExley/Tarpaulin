@@ -8,6 +8,8 @@ const {
     getSubmissionById,
     getSubmissionsById
 } = require('../models/submission')
+const { verifyUser, verifyStudent, verifyAdminOrInstructor } = require('./auth')
+const { getCourseById } = require('../models/course')
 
 
 const router = Router()
@@ -65,109 +67,127 @@ router.delete('/:id', (req, res, next) => {
         next(err)
     }
 })
-
-router.post('/:id/submissions', upload.single('file'), async (req, res, next) => {
+ 
+router.post('/:id/submissions', verifyUser, verifyStudent, upload.single('file'), async (req, res, next) => {
     try {
         console.log(`  -- Create a new submission for a specific assignment: ${req.params.id}`)
         const assignment = await getAssignmentById(req.params.id)
         if (assignment) {
+            const course = await getCourseById(assignment.courseId)
             if (req.file && validateAgainstSchema(req.body, SubmissionSchema)) {
-                const id = await insertNewSubmission(req.params.id, req.body, req.file)
-                if (id) {
-                    await fs.unlink(req.file.path)
-                    submissions = assignment.submissions
-                    submissions.push(id)
-                    await updateAssignmentSubmissionsById(req.params.id, submissions)
+                if (course && course.students && course.students.includes(req.user.id)) {
+                    req.body.studentId = req.user.id
+                    const id = await insertNewSubmission(req.params.id, req.body, req.file)
+                    if (id) {
+                        submissions = assignment.submissions
+                        submissions.push(id)
+                        await updateAssignmentSubmissionsById(req.params.id, submissions)
 
-                    res.status(201).send({
-                        id: id
-                    })
+                        res.status(201).send({
+                            id: id
+                        })
+                    } else {
+                        next()
+                    }
                 } else {
-                    next()
+                    res.status(403).send({
+                        error: "Not authorized, student not enrolled"
+                    })
                 }
             } else {
                 res.status(400).send({
-                    err: "The request body was either not present or did not contain a valid Submission object."
+                    error: "The request body was either not present or did not contain a valid Submission object."
                 })
             }
         } else {
             next()
+        }
+
+        if(req.file) {
+            await fs.unlink(req.file.path)
         }
     } catch (err) {
         next(err)
     }
 })
 
-router.get('/:id/submissions', async (req, res, next) => {
+router.get('/:id/submissions', verifyUser, verifyAdminOrInstructor, async (req, res, next) => {
     try {
         console.log(`  -- Fetch a list of all submissions for a specific assignment: ${req.params.id}`)
         const assignment = await getAssignmentById(req.params.id)
         if (assignment) {
-            let page = parseInt(req.query.page) || 1
-            let count = assignment.submissions.length
-            const pageSize = 5
-            let lastPage = Math.ceil(count / pageSize)
-            page = page > lastPage ? lastPage : page
-            page = page < 1 ? 1 : page
-            const offset = (page - 1) * pageSize
+            const course = await getCourseById(assignment.courseId)
+            if (req.user.role == 'admin' || (course && course.instructorId && course.instructorId == req.user.id)) {
+                let page = parseInt(req.query.page) || 1
+                let count = assignment.submissions.length
+                const pageSize = 5
+                let lastPage = Math.ceil(count / pageSize)
+                page = page > lastPage ? lastPage : page
+                page = page < 1 ? 1 : page
+                const offset = (page - 1) * pageSize
 
-            let submissions = []
+                let submissions = []
 
-            let i = offset
-            let i_end = Math.min(offset + pageSize, count)
+                let i = offset
+                let i_end = Math.min(offset + pageSize, count)
 
-            if (req.query.studentId) {
-                i = 0
-                i_end = count
-            }
-            let offset_count = 0
+                if (req.query.studentId) {
+                    i = 0
+                    i_end = count
+                }
+                let offset_count = 0
 
-            for (i; i < i_end; i++) {  
-                submission = await getSubmissionById(assignment.submissions[i])
+                for (i; i < i_end; i++) {  
+                    submission = await getSubmissionById(assignment.submissions[i])
 
-                // Will ignore when a submission id is nonexistant
-                if (submission) {
-                    if (req.query.studentId) {
-                        if (submission.metadata.studentId == req.query.studentId) {
-                            offset_count++
-                            if (offset_count > offset && submissions.length <= pageSize) {
-                                submissions.push({
-                                    assignmentId: submission.metadata.assignmentId,
-                                    studentId: submission.metadata.studentId,
-                                    timestamp: submission.metadata.timestamp,
-                                    grade: submission.metadata.grade,
-                                    url: `media/submissions/${submission._id}`
-                                })
+                    // Will ignore when a submission id is nonexistant
+                    if (submission) {
+                        if (req.query.studentId) {
+                            if (submission.metadata.studentId == req.query.studentId) {
+                                offset_count++
+                                if (offset_count > offset && submissions.length <= pageSize) {
+                                    submissions.push({
+                                        assignmentId: submission.metadata.assignmentId,
+                                        studentId: submission.metadata.studentId,
+                                        timestamp: submission.metadata.timestamp,
+                                        grade: submission.metadata.grade,
+                                        url: `media/submissions/${submission._id}`
+                                    })
+                                }
+                            } else {
+                                count--
                             }
                         } else {
-                            count--
+                            submissions.push({
+                                assignmentId: submission.metadata.assignmentId,
+                                studentId: submission.metadata.studentId,
+                                timestamp: submission.metadata.timestamp,
+                                grade: submission.metadata.grade,
+                                url: `media/submissions/${submission._id}`
+                            })
                         }
-                    } else {
-                        submissions.push({
-                            assignmentId: submission.metadata.assignmentId,
-                            studentId: submission.metadata.studentId,
-                            timestamp: submission.metadata.timestamp,
-                            grade: submission.metadata.grade,
-                            url: `media/submissions/${submission._id}`
-                        })
+                    } else if (req.query.studentId) {
+                        count--
                     }
-                } else if (req.query.studentId) {
-                    count--
                 }
-            }
 
-            if (req.query.studentId) {
-                lastPage = Math.ceil(count / pageSize)
-                page = page > lastPage ? lastPage : page
+                if (req.query.studentId) {
+                    lastPage = Math.ceil(count / pageSize)
+                    page = page > lastPage ? lastPage : page
+                }
+            
+                res.status(200).send({
+                    submissions: submissions,
+                    page: page,
+                    totalPages: lastPage,
+                    pageSize: pageSize,
+                    count: count
+                })
+            } else {
+                res.status(403).send({
+                    error: "Not authorized, instructor not registered with this course"
+                })
             }
-        
-            res.status(200).send({
-                submissions: submissions,
-                page: page,
-                totalPages: lastPage,
-                pageSize: pageSize,
-                count: count
-            })
         } else {
             next()
         }

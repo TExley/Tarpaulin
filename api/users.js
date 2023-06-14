@@ -4,12 +4,12 @@ const { ObjectId } = require('mongodb');
 const User = require("../models/user");
 const Course = require("../models/course");
 const Submission = require("../models/submission");
-const { verifyUser } = require("./auth.js");
+const { verifyUserCreation } = require("./auth.js");
 const { secretKey } = require('./auth.js');
 
 const router = Router();
 
-router.get("/", verifyUser, async function (req, res, next) {
+router.get("/", verifyUserCreation, async function (req, res, next) {
     try {
       const users = await User.getAllUsers();
       res.status(200).json({ users });
@@ -82,7 +82,7 @@ router.get("/", verifyUser, async function (req, res, next) {
     }
   });
   
-  router.get("/:id", verifyUser, async (req, res, next) => {
+  router.get("/:id", verifyUserCreation, async (req, res, next) => {
     const userId = req.params.id;
     console.log(userId)
     console.log(req.user.id)
@@ -101,36 +101,5 @@ router.get("/", verifyUser, async function (req, res, next) {
       next(e);
     }
   });
-
-router.get("/:id/courses", verifyUser, async function (req, res, next) {
-  const userId = req.params.id;
-  
-  try {
-    let userCourses;
-    if(req.user.role === 'instructor') {
-      userCourses = await Course.find({ instructorId: new ObjectId(userId) }).exec();
-    } else if(req.user.role === 'student') {
-      userCourses = await Course.find({ students: new ObjectId(userId) }).exec();
-    } else {
-      return res.status(403).json({ error: "Not authorized." });
-    }
-    res.status(200).json({ courses: userCourses });
-  } catch (e) {
-    next(e);
-  }
-});
-
-router.get("/:id/submissions", verifyUser, async function (req, res, next) {
-  const userId = req.params.id;
-  
-  try {
-    const userSubmissions = await Submission.find({
-      userId: new ObjectId(userId),
-    }).exec();
-    res.status(200).json({ submissions: userSubmissions });
-  } catch (e) {
-    next(e);
-  }
-});
 
 module.exports = router;
