@@ -19,6 +19,13 @@ async function createUser(user) {
     return result.insertedId;
 }
 
+async function getAllUsers() {
+    const db = getDbReference();
+    const collection = db.collection('users');
+    const users = await collection.find().project({ password: 0 }).toArray();
+    return users;
+}
+
 
 async function getUserById(id) {
     const db = getDbReference();
@@ -57,4 +64,4 @@ async function validateUser(email, password) {
     }
 }
 
-module.exports = { createUser, getUserById, getUserByEmail, validateUser };
+module.exports = { createUser, getUserById, getUserByEmail, validateUser, getAllUsers };
