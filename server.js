@@ -2,12 +2,15 @@ require("dotenv").config();
 
 const express = require("express");
 const morgan = require("morgan");
+const {connectToRedis, rateLimit} = require('./lib/redis')
 
 const api = require("./api");
 const { connectToDb } = require("./lib/mongo");
 
 const app = express();
 const port = process.env.PORT || 8000;
+
+app.use(rateLimit)
 
 app.use(morgan("dev"));
 
@@ -28,8 +31,11 @@ app.use("*", function (err, req, res, next) {
   });
 });
 
-connectToDb(function () {
-  app.listen(port, function () {
-    console.log("== Server is running on port", port);
-  });
-});
+connectToRedis(
+  connectToDb(
+    function () {
+      app.listen(port, function () {
+      console.log("== Server is running on port", port);
+    });
+  })
+);
