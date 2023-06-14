@@ -1,6 +1,6 @@
 const { Router } = require('express')
 const { validateAgainstSchema } = require("../lib/validation")
-const { getAssignmentById, updateAssignmentSubmissionsById } = require("../models/assignment")
+const { insertNewAssignment, updateAssignmentById, getAssignmentById, updateAssignmentSubmissionsById } = require("../models/assignment")
 const fs = require("node:fs/promises")
 const {
     SubmissionSchema,
@@ -10,7 +10,6 @@ const {
 } = require('../models/submission')
 const { verifyUser, verifyStudent, verifyAdminOrInstructor } = require('./auth')
 const { getCourseById } = require('../models/course')
-
 
 const router = Router()
 
@@ -32,37 +31,89 @@ const upload = multer({
     }
 })
 
-router.post('/', (req, res, next) => {
+router.post('/', verifyUser, verifyAdminOrInstructor, async (req, res, next) => {
     try {
         console.log("  -- Create a new assignment")
-        res.status(200).send()
+        const assignment = await getAssignmentById(req.params.id)
+        if (assignment) {
+            const course = await getCourseById(assignment.courseId)
+            if (req.user.id == 'admin' || (course && course.instructorId && course.instructorId == req.user.id)) {
+                const id = await insertNewAssignment(Assignment)
+                res.status(201).send({ id: id });
+            }
+            else {
+                res.status(403).send({
+                    error: "Not authorized, instructor not registered with this course"
+                })
+            }
+        } else {
+            next()
+        }
     } catch (err) {
         next(err)
     }
 })
 
-router.get('/:id', (req, res, next) => {
+router.get('/:id', async (req, res, next) => {
     try {
         console.log(`  -- Fetch data about a specific assignment: ${req.params.id}`)
-        res.status(200).send()
+        const assignment = await getAssignmentById(req.params.id)
+        if (assignment) {
+            res.status(200).send({
+                courseId: assignment.courseId,
+                title: assignment.title,
+                points: assignment.points,
+                due: assignment.due
+            })
+        } else {
+            next()
+        }
     } catch (err) {
         next(err)
     }
 })
 
-router.patch('/:id', (req, res, next) => {
+router.patch('/:id', verifyUser, verifyAdminOrInstructor, async (req, res, next) => {
     try {
         console.log(`  -- Update data about a specific assignment: ${req.params.id}`)
-        res.status(200).send()
+        const assignment = await getAssignmentById(req.params.id)
+        if (assignment) {
+            const course = await getCourseById(assignment.courseId)
+            if (req.user.id == 'admin' || (course && course.instructorId && course.instructorId == req.user.id)) {
+                const id = await updateAssignmentById(id, assignment)
+                res.status(200).send({ id: id });
+            }
+            else {
+                res.status(403).send({
+                    error: "Not authorized, instructor not registered with this course"
+                })
+            }
+        } else {
+            next()
+        }
     } catch (err) {
         next(err)
     }
 })
 
-router.delete('/:id', (req, res, next) => {
+router.delete('/:id', verifyUser, verifyAdminOrInstructor, async (req, res, next) => {
     try {
         console.log(`  -- Remove a specific assignment: ${req.params.id}`)
-        res.status(200).send()
+        const assignment = await getAssignmentById(req.params.id)
+        if (assignment) {
+            const course = await getCourseById(assignment.courseId)
+            if (req.user.id == 'admin' || (course && course.instructorId && course.instructorId == req.user.id)) {
+                const id = await deleteAssignmentById(id)
+                res.status(204).send();
+            }
+            else {
+                res.status(403).send({
+                    error: "Not authorized, instructor not registered with this course"
+                })
+            }
+        } else {
+            next()
+        }
     } catch (err) {
         next(err)
     }
