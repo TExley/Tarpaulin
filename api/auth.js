@@ -24,9 +24,9 @@ async function verifyUserCreation(req, res, next) {
   } 
 
   // Proceed if no user data is required or if user is an admin/instructor
-  if (!req.user || req.user.role === 'admin' || req.user.role === 'instructor') {
+  if (req.user && (req.user.role === 'admin' || req.user.role === 'instructor')) {
     next();
-  } else if (req.user.role === 'student' && req.user.id === req.params.id) {
+  } else if (req.user && (req.user.role === 'student' && req.user.id === req.params.id)) {
     // Proceed only if the student is trying to access their own data
     next();
   } else {
