@@ -1,6 +1,6 @@
 const { Router } = require('express')
 const { validateAgainstSchema } = require("../lib/validation")
-const { insertNewAssignment, updateAssignmentById, getAssignmentById, updateAssignmentSubmissionsById } = require("../models/assignment")
+const { insertNewAssignment, updateAssignmentById, getAssignmentById, updateAssignmentSubmissionsById, AssignmentSchema } = require("../models/assignment")
 const fs = require("node:fs/promises")
 const {
     SubmissionSchema,
@@ -34,9 +34,8 @@ const upload = multer({
 router.post('/', verifyUser, verifyAdminOrInstructor, async (req, res, next) => {
     try {
         console.log("  -- Create a new assignment")
-        const assignment = await getAssignmentById(req.params.id)
-        if (assignment) {
-            const course = await getCourseById(assignment.courseId)
+        if (validateAgainstSchema(req.body, AssignmentSchema)) {
+            const course = await getCourseById(req.body.courseId)
             if (req.user.id == 'admin' || (course && course.instructorId && course.instructorId == req.user.id)) {
                 const id = await insertNewAssignment(Assignment)
                 res.status(201).send({ id: id });
@@ -47,7 +46,9 @@ router.post('/', verifyUser, verifyAdminOrInstructor, async (req, res, next) => 
                 })
             }
         } else {
-            next()
+            res.status(404).send({
+                error: "The request body was either not present or did not contain a valid Assignment object."
+            })
         }
     } catch (err) {
         next(err)
