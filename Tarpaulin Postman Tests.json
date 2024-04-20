@@ -1,0 +1,567 @@
+{
+	"info": {
+		"_postman_id": "2ecedf36-b807-49af-8ebd-78ab0ba333b6",
+		"name": "final-assignmnet",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Create User",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0OGE0ZTViODQ0NThmMTEzNjAyMjFhYiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTY4Njc4NjU1NywiZXhwIjoxNjg2ODcyOTU3fQ.rUowPDH2jnLJZALdt8hZL4RH4KozKJfiRcnhfXaLda4",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Jane Doe\",\n  \"email\": \"admin5@oregonstate.edu\",\n  \"password\": \"hunter2\",\n  \"role\": \"admin\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\"email\":\"noreply@github.com\",\n\"password\":\"adminpass\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get user by id",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0OGE0ZTViODQ0NThmMTEzNjAyMjFhYiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTY4Njc4NjU1NywiZXhwIjoxNjg2ODcyOTU3fQ.rUowPDH2jnLJZALdt8hZL4RH4KozKJfiRcnhfXaLda4",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users/:userid",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								":userid"
+							],
+							"variable": [
+								{
+									"key": "userid",
+									"value": "648a5218d6916d4aaf1055c3"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Courses",
+			"item": [
+				{
+					"name": "Post",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0OGE0ZTViODQ0NThmMTEzNjAyMjFhYiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTY4Njc4NjU1NywiZXhwIjoxNjg2ODcyOTU3fQ.rUowPDH2jnLJZALdt8hZL4RH4KozKJfiRcnhfXaLda4",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"subject\": \"CS\",\r\n  \"number\": \"493\",\r\n  \"title\": \"Cloud Application Development\",\r\n  \"term\": \"sp22\",\r\n  \"instructorId\": \"648a4e5b84458f11360221b0\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/courses",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"courses"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/courses?page=2",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"courses"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Single",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/courses/648a5281d6916d4aaf1055c4",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"courses",
+								"648a5281d6916d4aaf1055c4"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Patch",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0OGE0ZTViODQ0NThmMTEzNjAyMjFhYiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTY4Njc4NjU1NywiZXhwIjoxNjg2ODcyOTU3fQ.rUowPDH2jnLJZALdt8hZL4RH4KozKJfiRcnhfXaLda4",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"term\": \"sp24\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/courses/648a5281d6916d4aaf1055c4",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"courses",
+								"648a5281d6916d4aaf1055c4"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Patch Copy",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0OGE0ZTViODQ0NThmMTEzNjAyMjFhYiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTY4Njc4NjU1NywiZXhwIjoxNjg2ODcyOTU3fQ.rUowPDH2jnLJZALdt8hZL4RH4KozKJfiRcnhfXaLda4",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/courses/648a52ffd6916d4aaf1055c5",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"courses",
+								"648a52ffd6916d4aaf1055c5"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Post Students",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0OGE0ZTViODQ0NThmMTEzNjAyMjFhYiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTY4Njc4NjU1NywiZXhwIjoxNjg2ODcyOTU3fQ.rUowPDH2jnLJZALdt8hZL4RH4KozKJfiRcnhfXaLda4",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"add\": [\r\n  ],\r\n  \"remove\": [\r\n      \"648a4e5b84458f11360221ad\"\r\n  ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/courses/648a5281d6916d4aaf1055c4/students",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"courses",
+								"648a5281d6916d4aaf1055c4",
+								"students"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Students",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0OGE0ZTViODQ0NThmMTEzNjAyMjFhYiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTY4Njc4NjU1NywiZXhwIjoxNjg2ODcyOTU3fQ.rUowPDH2jnLJZALdt8hZL4RH4KozKJfiRcnhfXaLda4",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/courses/648a5281d6916d4aaf1055c4/students",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"courses",
+								"648a5281d6916d4aaf1055c4",
+								"students"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Assignments",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/courses/648245a06d7c77309bacad4f/assignments",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"courses",
+								"648245a06d7c77309bacad4f",
+								"assignments"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get CSV",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0ODk1MTU3MDcxNzQwYjY3OTI2MjhjNiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTY4NjcyMzI1NiwiZXhwIjoxNjg2ODA5NjU2fQ.c0nEfwvQzyAdBbk7oD3HoF8U1W5uIE_BOvkwMdqbM3I",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/courses/648a5281d6916d4aaf1055c4/roster",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"courses",
+								"648a5281d6916d4aaf1055c4",
+								"roster"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "New Request",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8000/courses/64895535cd04237574ddcb1e/roster",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8000",
+									"path": [
+										"courses",
+										"64895535cd04237574ddcb1e",
+										"roster"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "plain",
+							"header": [
+								{
+									"key": "X-Powered-By",
+									"value": "Express"
+								},
+								{
+									"key": "Content-Type",
+									"value": "text/csv"
+								},
+								{
+									"key": "Content-Disposition",
+									"value": "attachment; filename=roster.csv"
+								},
+								{
+									"key": "Date",
+									"value": "Wed, 14 Jun 2023 06:50:04 GMT"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=5"
+								},
+								{
+									"key": "Content-Length",
+									"value": "0"
+								}
+							],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Assignments",
+			"item": [
+				{
+					"name": "Submissions",
+					"item": [
+						{
+							"name": "Post Submission",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "studentId",
+											"value": "6485471c95c7df8e5e9b5037",
+											"type": "text"
+										},
+										{
+											"key": "file",
+											"type": "file",
+											"src": "/C:/Users/Lain/Desktop/addresses.csv"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{baseUrl}}/assignments/6485471d95c7df8e5e9b5050/submissions",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"assignments",
+										"6485471d95c7df8e5e9b5050",
+										"submissions"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Submissions",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/assignments/6485471d95c7df8e5e9b5050/submissions?page=1&studentId=6485471c95c7df8e5e9b5037",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"assignments",
+										"6485471d95c7df8e5e9b5050",
+										"submissions"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "1"
+										},
+										{
+											"key": "studentId",
+											"value": "6485471c95c7df8e5e9b5037"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Download Submission",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/media/submissions/64858f7dc689f92a7cfc9d39",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"media",
+										"submissions",
+										"64858f7dc689f92a7cfc9d39"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Post Assingment",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0OGE0ZTViODQ0NThmMTEzNjAyMjFhYiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTY4Njc4NjU1NywiZXhwIjoxNjg2ODcyOTU3fQ.rUowPDH2jnLJZALdt8hZL4RH4KozKJfiRcnhfXaLda4",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\": \"Assignment 1\",\r\n    \"points\": 100,\r\n    \"due\": \"2022-02-15\",\r\n    \"courseId\": \"648a4e5b84458f11360221b0\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/assignments",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"assignments"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
